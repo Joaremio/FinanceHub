@@ -15,11 +15,7 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
   static const _titles = ['Dashboard', 'Transações', 'Perfil'];
-  static const _pages = [
-    DashboardPage(),
-    TransactionsPage(),
-    ProfilePage(),
-  ];
+  static const _pages = [DashboardPage(), TransactionsPage(), ProfilePage()];
 
   @override
   Widget build(BuildContext context) {
