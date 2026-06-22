@@ -1,3 +1,4 @@
+import 'package:financehub/pages/categories_page.dart';
 import 'package:flutter/material.dart';
 
 import 'dashboard_page.dart';
@@ -14,8 +15,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
-  static const _titles = ['Dashboard', 'Transações', 'Perfil'];
-  static const _pages = [DashboardPage(), TransactionsPage(), ProfilePage()];
+  static const _titles = ['Dashboard', 'Transações', 'Categorias', 'Perfil'];
+  static const _pages = [
+    DashboardPage(),
+    TransactionsPage(),
+    CategoriesPage(),
+    ProfilePage(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +29,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(title: Text(_titles[_selectedIndex])),
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {
@@ -39,6 +46,11 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.receipt_long_outlined),
             activeIcon: Icon(Icons.receipt_long),
             label: 'Transações',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.category_outlined),
+            activeIcon: Icon(Icons.person),
+            label: 'Categorias',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
