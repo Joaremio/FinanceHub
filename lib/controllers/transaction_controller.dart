@@ -2,6 +2,7 @@ import 'package:financehub/models/category.dart';
 import 'package:flutter/material.dart';
 
 import '../models/transaction_model.dart';
+import '../repositories/category_repository.dart';
 import '../repositories/transaction_repository.dart';
 
 export '../repositories/transaction_repository.dart'
@@ -9,19 +10,21 @@ export '../repositories/transaction_repository.dart'
 
 class TransactionsController extends ChangeNotifier {
   final TransactionRepository _repository;
-  final List<CategoryModel> _categories;
+  final CategoryRepository _categoryRepository;
 
   TransactionsController({
     TransactionRepository? repository,
-    List<CategoryModel>? categories,
+    CategoryRepository? categoryRepository,
   }) : _repository = repository ?? TransactionRepository(),
-       _categories = categories ?? CategoryModel.defaults;
+       _categoryRepository = categoryRepository ?? CategoryRepository();
 
   List<TransactionModel> items = [];
   bool isLoading = false;
   bool isLoadingMore = false;
   bool hasMore = true;
   String? error;
+  bool isSaving = false;
+  List<CategoryModel> categories = [];
 
   TransactionFilter filter = TransactionFilter.all;
   TransactionSort sort = TransactionSort.dateDesc;
@@ -31,7 +34,7 @@ class TransactionsController extends ChangeNotifier {
 
   CategoryModel? categoryOf(String categoryId) {
     try {
-      return _categories.firstWhere((c) => c.id == categoryId);
+      return categories.firstWhere((c) => c.id == categoryId);
     } catch (_) {
       return null;
     }
@@ -45,12 +48,12 @@ class TransactionsController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final result = await _repository.fetchPage(
-        page: 0,
-        filter: filter,
-        sort: sort,
-        search: search,
-      );
+      final results = await Future.wait([
+        _categoryRepository.fetchAll(),
+        _repository.fetchPage(page: 0, filter: filter, sort: sort, search: search),
+      ]);
+      categories = results[0] as List<CategoryModel>;
+      final result = results[1] as List<TransactionModel>;
       items = result;
       hasMore = result.length == TransactionRepository.pageSize;
     } catch (_) {
@@ -100,5 +103,37 @@ class TransactionsController extends ChangeNotifier {
     if (search == value) return;
     search = value;
     load();
+  }
+
+  Future<void> refreshCategories() async {
+    categories = await _categoryRepository.fetchAll();
+    notifyListeners();
+  }
+
+  Future<bool> create(TransactionModel transaction) => _save(
+    () => _repository.create(transaction),
+  );
+
+  Future<bool> update(TransactionModel transaction) => _save(
+    () => _repository.update(transaction),
+  );
+
+  Future<bool> delete(String id) => _save(() => _repository.delete(id));
+
+  Future<bool> _save(Future<void> Function() operation) async {
+    isSaving = true;
+    error = null;
+    notifyListeners();
+    try {
+      await operation();
+      await load();
+      return true;
+    } catch (_) {
+      error = 'Não foi possível salvar a transação.';
+      return false;
+    } finally {
+      isSaving = false;
+      notifyListeners();
+    }
   }
 }

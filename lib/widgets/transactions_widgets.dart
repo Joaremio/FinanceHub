@@ -190,6 +190,8 @@ class TransactionList extends StatelessWidget {
   final ScrollController scrollController;
   final TransactionsController controller;
   final bool isLoadingMore;
+  final ValueChanged<TransactionModel> onEdit;
+  final ValueChanged<String> onDelete;
 
   const TransactionList({
     super.key,
@@ -197,6 +199,8 @@ class TransactionList extends StatelessWidget {
     required this.scrollController,
     required this.controller,
     required this.isLoadingMore,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   @override
@@ -225,6 +229,8 @@ class TransactionList extends StatelessWidget {
               (t) => TransactionTile(
                 transaction: t,
                 category: controller.categoryOf(t.categoryId),
+                onEdit: () => onEdit(t),
+                onDelete: () => onDelete(t.id),
               ),
             ),
           ],
@@ -323,11 +329,15 @@ class _MonthHeader extends StatelessWidget {
 class TransactionTile extends StatelessWidget {
   final TransactionModel transaction;
   final CategoryModel? category;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   const TransactionTile({
     super.key,
     required this.transaction,
     required this.category,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   @override
@@ -496,6 +506,33 @@ class TransactionTile extends StatelessWidget {
             ),
             if (transaction.note != null)
               _DetailRow(label: 'Nota', value: transaction.note!),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      onEdit();
+                    },
+                    icon: const Icon(Icons.edit_outlined),
+                    label: const Text('Editar'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(backgroundColor: colorScheme.error),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      onDelete();
+                    },
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('Excluir'),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 8),
           ],
         ),

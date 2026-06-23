@@ -1,5 +1,7 @@
 import 'package:financehub/controllers/transaction_controller.dart';
+import 'package:financehub/models/transaction_model.dart';
 import 'package:financehub/widgets/transactions_widgets.dart';
+import 'package:financehub/widgets/transaction_form_sheet.dart';
 import 'package:flutter/material.dart';
 
 class TransactionsPage extends StatefulWidget {
@@ -34,6 +36,29 @@ class _TransactionsPageState extends State<TransactionsPage> {
     if (nearEnd) _controller.loadMore();
   }
 
+  Future<void> _showTransactionForm([TransactionModel? transaction]) async {
+    try {
+      await _controller.refreshCategories();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Não foi possível carregar as categorias.')),
+        );
+      }
+      return;
+    }
+    if (!mounted) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => TransactionFormSheet(
+        controller: _controller,
+        existing: transaction,
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _controller.removeListener(_rebuild);
@@ -49,19 +74,14 @@ class _TransactionsPageState extends State<TransactionsPage> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showTransactionForm(),
+        child: const Icon(Icons.add),
+      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-              child: Text(
-                'Transações',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
             TransactionSearchBar(
               controller: _searchController,
               onChanged: _controller.setSearch,
@@ -103,6 +123,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
       scrollController: _scrollController,
       controller: _controller,
       isLoadingMore: _controller.isLoadingMore,
+      onEdit: _showTransactionForm,
+      onDelete: _controller.delete,
     );
   }
 }

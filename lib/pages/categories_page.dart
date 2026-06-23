@@ -62,15 +62,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-              child: Text(
-                'Categorias',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
             Expanded(child: _buildBody()),
           ],
         ),
@@ -90,46 +81,34 @@ class _CategoriesPageState extends State<CategoriesPage> {
       );
     }
 
-    if (_controller.income.isEmpty && _controller.expense.isEmpty) {
+    if (_controller.items.isEmpty) {
       return const CategoryEmptyState();
     }
 
     return ListView(
-      // Adicionamos um padding no final para a lista não ficar escondida atrás do FloatingActionButton
       padding: const EdgeInsets.only(bottom: 88, top: 8),
       children: [
-        // Seção de Entradas
-        if (_controller.income.isNotEmpty) ...[
-          CategorySectionHeader(
-            title: 'Entradas',
-            color: Colors.green, // Cor que bate com o tema do form
-            count: _controller.income.length,
+        ..._controller.items.map(
+          (category) => CategoryTile(
+            category: category,
+            onEdit: () => _showCategoryForm(category),
+            onDelete: () => _deleteCategory(category),
           ),
-          ..._controller.income.map(
-            (category) => CategoryTile(
-              category: category,
-              onEdit: () => _showCategoryForm(category),
-              onDelete: () => _controller.delete(category.id),
-            ),
-          ),
-        ],
-
-        // Seção de Saídas
-        if (_controller.expense.isNotEmpty) ...[
-          CategorySectionHeader(
-            title: 'Saídas',
-            color: Colors.red, // Cor que bate com o tema do form
-            count: _controller.expense.length,
-          ),
-          ..._controller.expense.map(
-            (category) => CategoryTile(
-              category: category,
-              onEdit: () => _showCategoryForm(category),
-              onDelete: () => _controller.delete(category.id),
-            ),
-          ),
-        ],
+        ),
       ],
     );
+  }
+
+  Future<void> _deleteCategory(CategoryModel category) async {
+    final success = await _controller.delete(category.id);
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Não foi possível excluir. Verifique se a categoria está em uso.',
+          ),
+        ),
+      );
+    }
   }
 }

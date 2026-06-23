@@ -11,8 +11,7 @@ class CategoryController extends ChangeNotifier {
 
   // ── Estado público ─────────────────────────────────────────────────────────
 
-  List<CategoryModel> income = [];
-  List<CategoryModel> expense = [];
+  List<CategoryModel> items = [];
   bool isLoading = false;
   bool isSaving = false;
   String? error;
@@ -25,9 +24,7 @@ class CategoryController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final all = await _repository.fetchAll();
-      income = all.where((c) => c.type == 'income').toList();
-      expense = all.where((c) => c.type == 'expense').toList();
+      items = await _repository.fetchAll();
     } catch (_) {
       error = 'Não foi possível carregar as categorias.';
     } finally {
@@ -76,6 +73,6 @@ class CategoryController extends ChangeNotifier {
     }
   }
 
-  // Gera um ID simples. Substituir por UUID ou ID do banco futuramente.
-  String generateId() => DateTime.now().millisecondsSinceEpoch.toString();
+  // O Firestore substitui este valor pelo ID definitivo ao criar o documento.
+  String generateId() => '';
 }

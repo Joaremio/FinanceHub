@@ -169,7 +169,6 @@ class CategoryFormSheet extends StatefulWidget {
 
 class _CategoryFormSheetState extends State<CategoryFormSheet> {
   late final TextEditingController _nameController;
-  late String _type;
   late String _selectedIcon;
   late int _selectedColor;
 
@@ -180,7 +179,6 @@ class _CategoryFormSheetState extends State<CategoryFormSheet> {
     super.initState();
     final e = widget.existing;
     _nameController = TextEditingController(text: e?.name ?? '');
-    _type = e?.type ?? 'expense';
     _selectedIcon = e?.icon ?? _kIcons.first.key;
     _selectedColor = e?.colorValue ?? _kColors.first;
   }
@@ -198,7 +196,6 @@ class _CategoryFormSheetState extends State<CategoryFormSheet> {
     final category = CategoryModel(
       id: widget.existing?.id ?? widget.controller.generateId(),
       name: name,
-      type: _type,
       colorValue: _selectedColor,
       icon: _selectedIcon,
     );
@@ -256,40 +253,6 @@ class _CategoryFormSheetState extends State<CategoryFormSheet> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-
-            // Tipo
-            Text(
-              'Tipo',
-              style: TextStyle(
-                fontSize: 13,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: _TypeButton(
-                    label: 'Entrada',
-                    icon: Icons.arrow_downward,
-                    color: Colors.green,
-                    selected: _type == 'income',
-                    onTap: () => setState(() => _type = 'income'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _TypeButton(
-                    label: 'Saída',
-                    icon: Icons.arrow_upward,
-                    color: Colors.red,
-                    selected: _type == 'expense',
-                    onTap: () => setState(() => _type = 'expense'),
-                  ),
-                ),
-              ],
             ),
             const SizedBox(height: 16),
 
@@ -440,63 +403,6 @@ class _IconPicker extends StatelessWidget {
 }
 
 // ─── Botão de tipo (Entrada/Saída) ────────────────────────────────────────────
-
-class _TypeButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final Color color;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _TypeButton({
-    required this.label,
-    required this.icon,
-    required this.color,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: selected
-              ? color.withOpacity(0.12)
-              : colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected ? color : Colors.transparent,
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 16,
-              color: selected ? color : colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                color: selected ? color : colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 // ─── Estado vazio ─────────────────────────────────────────────────────────────
 
