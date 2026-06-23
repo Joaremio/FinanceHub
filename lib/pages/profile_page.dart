@@ -2,7 +2,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+  const ProfilePage({
+    super.key,
+    required this.darkMode,
+    required this.onDarkModeChanged,
+  });
+
+  final bool darkMode;
+  final ValueChanged<bool> onDarkModeChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +39,17 @@ class ProfilePage extends StatelessWidget {
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          secondary: Icon(
+            darkMode ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
+          ),
+          title: const Text('Modo escuro'),
+          subtitle: const Text('Salvar preferência neste dispositivo'),
+          value: darkMode,
+          onChanged: onDarkModeChanged,
+        ),
+        const Divider(height: 32),
         FilledButton.icon(
           onPressed: () => FirebaseAuth.instance.signOut(),
           icon: const Icon(Icons.logout),

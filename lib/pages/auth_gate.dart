@@ -5,7 +5,14 @@ import 'home_page.dart';
 import 'login_page.dart';
 
 class AuthGate extends StatelessWidget {
-  const AuthGate({super.key});
+  const AuthGate({
+    super.key,
+    required this.darkMode,
+    required this.onDarkModeChanged,
+  });
+
+  final bool darkMode;
+  final ValueChanged<bool> onDarkModeChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +26,10 @@ class AuthGate extends StatelessWidget {
         }
 
         if (snapshot.hasData) {
-          return const HomePage();
+          return HomePage(
+            darkMode: darkMode,
+            onDarkModeChanged: onDarkModeChanged,
+          );
         }
 
         return const LoginPage();

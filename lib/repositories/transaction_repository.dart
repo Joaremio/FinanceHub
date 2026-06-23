@@ -7,6 +7,24 @@ enum TransactionFilter { all, income, expense }
 
 enum TransactionSort { dateDesc, dateAsc }
 
+class TransactionCursor {
+  const TransactionCursor._(this._document);
+
+  final QueryDocumentSnapshot<Map<String, dynamic>> _document;
+}
+
+class TransactionPage {
+  const TransactionPage({
+    required this.items,
+    required this.cursor,
+    required this.hasMore,
+  });
+
+  final List<TransactionModel> items;
+  final TransactionCursor? cursor;
+  final bool hasMore;
+}
+
 class TransactionRepository {
   TransactionRepository({FirebaseFirestore? firestore, FirebaseAuth? auth})
     : _firestore = firestore ?? FirebaseFirestore.instance,
@@ -23,34 +41,54 @@ class TransactionRepository {
     return _firestore.collection('users').doc(user.uid).collection('transactions');
   }
 
-  Future<List<TransactionModel>> fetchPage({
-    required int page,
+  Future<TransactionPage> fetchPage({
     required TransactionFilter filter,
     required TransactionSort sort,
     required String search,
+    TransactionCursor? after,
   }) async {
-    final snapshot = await _collection.get();
-    var items = snapshot.docs.map(_fromDocument).toList();
+    final items = <TransactionModel>[];
+    final normalizedSearch = search.trim().toLowerCase();
+    var cursor = after?._document;
+    var hasMore = true;
 
-    if (filter == TransactionFilter.income) {
-      items = items.where((item) => item.isIncome).toList();
-    } else if (filter == TransactionFilter.expense) {
-      items = items.where((item) => item.isExpense).toList();
+    while (items.length < pageSize && hasMore) {
+      final remaining = pageSize - items.length;
+      Query<Map<String, dynamic>> query = _collection;
+
+      query = query
+          .orderBy('date', descending: sort == TransactionSort.dateDesc)
+          .limit(remaining);
+
+      if (cursor != null) {
+        query = query.startAfterDocument(cursor);
+      }
+
+      final snapshot = await query.get();
+      if (snapshot.docs.isEmpty) {
+        hasMore = false;
+        break;
+      }
+
+      cursor = snapshot.docs.last;
+      hasMore = snapshot.docs.length == remaining;
+
+      final fetchedItems = snapshot.docs.map(_fromDocument).where((item) {
+        final matchesFilter = filter == TransactionFilter.all ||
+            (filter == TransactionFilter.income && item.isIncome) ||
+            (filter == TransactionFilter.expense && item.isExpense);
+        final matchesSearch = normalizedSearch.isEmpty ||
+            item.title.toLowerCase().contains(normalizedSearch);
+        return matchesFilter && matchesSearch;
+      });
+      items.addAll(fetchedItems);
     }
 
-    final query = search.trim().toLowerCase();
-    if (query.isNotEmpty) {
-      items = items.where((item) => item.title.toLowerCase().contains(query)).toList();
-    }
-
-    items.sort((a, b) => sort == TransactionSort.dateDesc
-        ? b.date.compareTo(a.date)
-        : a.date.compareTo(b.date));
-
-    final start = page * pageSize;
-    if (start >= items.length) return [];
-    final end = (start + pageSize).clamp(0, items.length);
-    return items.sublist(start, end);
+    return TransactionPage(
+      items: items,
+      cursor: cursor == null ? null : TransactionCursor._(cursor),
+      hasMore: hasMore,
+    );
   }
 
   Future<void> create(TransactionModel transaction) async {

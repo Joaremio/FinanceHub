@@ -6,7 +6,14 @@ import 'profile_page.dart';
 import 'transactions_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({
+    super.key,
+    required this.darkMode,
+    required this.onDarkModeChanged,
+  });
+
+  final bool darkMode;
+  final ValueChanged<bool> onDarkModeChanged;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -16,18 +23,21 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
   static const _titles = ['Dashboard', 'Transações', 'Categorias', 'Perfil'];
-  static const _pages = [
-    DashboardPage(),
-    TransactionsPage(),
-    CategoriesPage(),
-    ProfilePage(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final pages = [
+      const DashboardPage(),
+      const TransactionsPage(),
+      const CategoriesPage(),
+      ProfilePage(
+        darkMode: widget.darkMode,
+        onDarkModeChanged: widget.onDarkModeChanged,
+      ),
+    ];
+
     return Scaffold(
       appBar: AppBar(title: Text(_titles[_selectedIndex])),
-      body: _pages[_selectedIndex],
+      body: pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,

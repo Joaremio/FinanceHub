@@ -76,6 +76,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
       backgroundColor: colorScheme.surface,
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showTransactionForm(),
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         child: const Icon(Icons.add),
       ),
       body: SafeArea(
