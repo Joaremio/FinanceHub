@@ -506,6 +506,11 @@ class TransactionTile extends StatelessWidget {
             ),
             if (transaction.note != null)
               _DetailRow(label: 'Nota', value: transaction.note!),
+            if (transaction.hasLocation)
+              _DetailRow(
+                label: 'Local',
+                value: transaction.locationName ?? 'Local selecionado',
+              ),
             const SizedBox(height: 16),
             Row(
               children: [

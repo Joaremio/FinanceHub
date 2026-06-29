@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../controllers/transaction_controller.dart';
 import '../models/category.dart';
 import '../models/transaction_model.dart';
+import '../pages/location_picker_page.dart';
 
 class TransactionFormSheet extends StatefulWidget {
   const TransactionFormSheet({
@@ -25,6 +27,7 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
   late String _type;
   late DateTime _date;
   String? _categoryId;
+  TransactionLocationSelection? _selectedLocation;
   String? _validationError;
 
   bool get _isEditing => widget.existing != null;
@@ -37,12 +40,21 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
     final existing = widget.existing;
     _titleController = TextEditingController(text: existing?.title ?? '');
     _amountController = TextEditingController(
-      text: existing == null ? '' : existing.amount.toStringAsFixed(2).replaceAll('.', ','),
+      text: existing == null
+          ? ''
+          : existing.amount.toStringAsFixed(2).replaceAll('.', ','),
     );
     _noteController = TextEditingController(text: existing?.note ?? '');
     _type = existing?.type ?? 'expense';
     _date = existing?.date ?? DateTime.now();
     _categoryId = existing?.categoryId;
+    if (existing != null && existing.hasLocation) {
+      _selectedLocation = TransactionLocationSelection(
+        point: LatLng(existing.locationLatitude!, existing.locationLongitude!),
+        label: existing.locationName ?? 'Local selecionado no mapa',
+        address: existing.locationAddress,
+      );
+    }
     if (!_availableCategories.any((category) => category.id == _categoryId)) {
       _categoryId = _availableCategories.firstOrNull?.id;
     }
@@ -72,14 +84,66 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
     if (selected != null) setState(() => _date = selected);
   }
 
+  Future<void> _pickLocation() async {
+    final selection = await Navigator.push<TransactionLocationSelection>(
+      context,
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => LocationPickerPage(initialSelection: _selectedLocation),
+      ),
+    );
+    if (selection != null && mounted) {
+      setState(() => _selectedLocation = selection);
+    }
+  }
+
+  void _clearLocation() {
+    setState(() => _selectedLocation = null);
+  }
+
+  Widget _buildLocationTile() {
+    final selected = _selectedLocation;
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(
+        selected == null
+            ? Icons.add_location_alt_outlined
+            : Icons.location_on_outlined,
+      ),
+      title: Text(selected?.label ?? 'Adicionar local (opcional)'),
+      subtitle: Text(
+        selected?.address ??
+            (selected == null
+                ? 'Escolha no mapa, pesquise ou use o GPS'
+                : '${selected.point.latitude.toStringAsFixed(5)}, ${selected.point.longitude.toStringAsFixed(5)}'),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: selected == null
+          ? const Icon(Icons.chevron_right)
+          : IconButton(
+              onPressed: _clearLocation,
+              icon: const Icon(Icons.close),
+              tooltip: 'Remover local',
+            ),
+      onTap: _pickLocation,
+    );
+  }
+
   Future<void> _submit() async {
     final rawAmount = _amountController.text.trim();
     final normalizedAmount = rawAmount.contains(',')
         ? rawAmount.replaceAll('.', '').replaceAll(',', '.')
         : rawAmount;
     final amount = double.tryParse(normalizedAmount);
-    if (_titleController.text.trim().isEmpty || amount == null || amount <= 0 || _categoryId == null) {
-      setState(() => _validationError = 'Informe título, valor válido e categoria.');
+    if (_titleController.text.trim().isEmpty ||
+        amount == null ||
+        amount <= 0 ||
+        _categoryId == null) {
+      setState(
+        () => _validationError = 'Informe título, valor válido e categoria.',
+      );
       return;
     }
 
@@ -90,14 +154,22 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
       type: _type,
       categoryId: _categoryId!,
       date: _date,
-      note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+      note: _noteController.text.trim().isEmpty
+          ? null
+          : _noteController.text.trim(),
+      locationName: _selectedLocation?.label,
+      locationAddress: _selectedLocation?.address,
+      locationLatitude: _selectedLocation?.point.latitude,
+      locationLongitude: _selectedLocation?.point.longitude,
     );
     final success = _isEditing
         ? await widget.controller.update(transaction)
         : await widget.controller.create(transaction);
     if (success && mounted) Navigator.pop(context);
     if (!success && mounted) {
-      setState(() => _validationError = 'Não foi possível salvar. Tente novamente.');
+      setState(
+        () => _validationError = 'Não foi possível salvar. Tente novamente.',
+      );
     }
   }
 
@@ -122,8 +194,16 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
             const SizedBox(height: 20),
             SegmentedButton<String>(
               segments: const [
-                ButtonSegment(value: 'expense', label: Text('Saída'), icon: Icon(Icons.arrow_upward)),
-                ButtonSegment(value: 'income', label: Text('Entrada'), icon: Icon(Icons.arrow_downward)),
+                ButtonSegment(
+                  value: 'expense',
+                  label: Text('Saída'),
+                  icon: Icon(Icons.arrow_upward),
+                ),
+                ButtonSegment(
+                  value: 'income',
+                  label: Text('Entrada'),
+                  icon: Icon(Icons.arrow_downward),
+                ),
               ],
               selected: {_type},
               onSelectionChanged: (values) => _setType(values.first),
@@ -137,15 +217,25 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
             const SizedBox(height: 12),
             TextField(
               controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(labelText: 'Valor', prefixText: 'R\$ '),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: const InputDecoration(
+                labelText: 'Valor',
+                prefixText: 'R\$ ',
+              ),
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue: _categoryId,
               decoration: const InputDecoration(labelText: 'Categoria'),
               items: _availableCategories
-                  .map((category) => DropdownMenuItem(value: category.id, child: Text(category.name)))
+                  .map(
+                    (category) => DropdownMenuItem(
+                      value: category.id,
+                      child: Text(category.name),
+                    ),
+                  )
                   .toList(),
               onChanged: (value) => setState(() => _categoryId = value),
             ),
@@ -159,18 +249,27 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.calendar_today_outlined),
               title: const Text('Data'),
-              subtitle: Text('${_date.day.toString().padLeft(2, '0')}/${_date.month.toString().padLeft(2, '0')}/${_date.year}'),
+              subtitle: Text(
+                '${_date.day.toString().padLeft(2, '0')}/${_date.month.toString().padLeft(2, '0')}/${_date.year}',
+              ),
               onTap: _pickDate,
             ),
             TextField(
               controller: _noteController,
               maxLines: 2,
-              decoration: const InputDecoration(labelText: 'Observação (opcional)'),
+              decoration: const InputDecoration(
+                labelText: 'Observação (opcional)',
+              ),
             ),
+            const SizedBox(height: 12),
+            _buildLocationTile(),
             if (_validationError != null)
               Padding(
                 padding: const EdgeInsets.only(top: 12),
-                child: Text(_validationError!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                child: Text(
+                  _validationError!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
               ),
             const SizedBox(height: 20),
             SizedBox(

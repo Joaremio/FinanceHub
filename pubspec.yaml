@@ -38,7 +38,14 @@ dependencies:
   firebase_auth: ^6.5.2
   cloud_firestore: ^6.6.0
   shared_preferences: ^2.5.5
+<<<<<<< HEAD
   fl_chart: ^0.70.2
+=======
+  flutter_map: ^8.3.0
+  latlong2: ^0.9.1
+  geolocator: ^14.0.3
+  http: ^1.6.0
+>>>>>>> b80e9fd4b941df7a2fbfce661d24b761376997f8
 
 dev_dependencies:
   flutter_test:

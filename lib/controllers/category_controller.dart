@@ -42,9 +42,10 @@ class CategoryController extends ChangeNotifier {
       await load();
       return true;
     } catch (_) {
+      return false;
+    } finally {
       isSaving = false;
       notifyListeners();
-      return false;
     }
   }
 
@@ -57,9 +58,10 @@ class CategoryController extends ChangeNotifier {
       await load();
       return true;
     } catch (_) {
+      return false;
+    } finally {
       isSaving = false;
       notifyListeners();
-      return false;
     }
   }
 
