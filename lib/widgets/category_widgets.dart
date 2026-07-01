@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../controllers/category_controller.dart';
 
-// ─── Tile de categoria na lista ───────────────────────────────────────────────
-
 class CategoryTile extends StatelessWidget {
   final CategoryModel category;
   final VoidCallback onEdit;
@@ -104,8 +102,6 @@ class CategoryTile extends StatelessWidget {
   }
 }
 
-// ─── Seção de título (Entradas / Saídas) ──────────────────────────────────────
-
 class CategorySectionHeader extends StatelessWidget {
   final String title;
   final Color color;
@@ -154,8 +150,6 @@ class CategorySectionHeader extends StatelessWidget {
     );
   }
 }
-
-// ─── Bottom sheet de criação/edição ──────────────────────────────────────────
 
 class CategoryFormSheet extends StatefulWidget {
   final CategoryModel? existing; // null = criar, preenchido = editar
@@ -224,7 +218,6 @@ class _CategoryFormSheetState extends State<CategoryFormSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Handle
             Center(
               child: Container(
                 width: 40,
@@ -243,7 +236,6 @@ class _CategoryFormSheetState extends State<CategoryFormSheet> {
             ),
             const SizedBox(height: 20),
 
-            // Nome
             TextField(
               controller: _nameController,
               textCapitalization: TextCapitalization.sentences,
@@ -256,7 +248,6 @@ class _CategoryFormSheetState extends State<CategoryFormSheet> {
             ),
             const SizedBox(height: 16),
 
-            // Cor
             Text(
               'Cor',
               style: TextStyle(
@@ -271,7 +262,6 @@ class _CategoryFormSheetState extends State<CategoryFormSheet> {
             ),
             const SizedBox(height: 16),
 
-            // Ícone
             Text(
               'Ícone',
               style: TextStyle(
@@ -287,7 +277,6 @@ class _CategoryFormSheetState extends State<CategoryFormSheet> {
             ),
             const SizedBox(height: 24),
 
-            // Botão salvar
             SizedBox(
               width: double.infinity,
               child: FilledButton(
@@ -307,8 +296,6 @@ class _CategoryFormSheetState extends State<CategoryFormSheet> {
     );
   }
 }
-
-// ─── Seletor de cor ───────────────────────────────────────────────────────────
 
 class _ColorPicker extends StatelessWidget {
   final int selected;
@@ -353,8 +340,6 @@ class _ColorPicker extends StatelessWidget {
     );
   }
 }
-
-// ─── Seletor de ícone ─────────────────────────────────────────────────────────
 
 class _IconPicker extends StatelessWidget {
   final String selected;
@@ -402,10 +387,6 @@ class _IconPicker extends StatelessWidget {
   }
 }
 
-// ─── Botão de tipo (Entrada/Saída) ────────────────────────────────────────────
-
-// ─── Estado vazio ─────────────────────────────────────────────────────────────
-
 class CategoryEmptyState extends StatelessWidget {
   const CategoryEmptyState({super.key});
 
@@ -440,8 +421,6 @@ class CategoryEmptyState extends StatelessWidget {
     );
   }
 }
-
-// ─── Estado de erro ───────────────────────────────────────────────────────────
 
 class CategoryErrorState extends StatelessWidget {
   final String message;
@@ -488,8 +467,6 @@ class CategoryErrorState extends StatelessWidget {
     );
   }
 }
-
-// ─── Helpers e constantes ─────────────────────────────────────────────────────
 
 IconData categoryIconData(String name) {
   final entry = _kIcons.where((e) => e.key == name).firstOrNull;
