@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "253825748499",
+    "project_id": "gestaofinanceiraflutter",
+    "storage_bucket": "gestaofinanceiraflutter.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:253825748499:android:e0196403ff440de55fb9e6",
+        "android_client_info": {
+          "package_name": "com.example.financehub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-hXUajitwNMlcTdJRBgnJXPMBkdXHh1U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:253825748499:android:52f452349200b4005fb9e6",
+        "android_client_info": {
+          "package_name": "com.example.gestao_financeira_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-hXUajitwNMlcTdJRBgnJXPMBkdXHh1U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
