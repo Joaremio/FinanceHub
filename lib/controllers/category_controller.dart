@@ -9,14 +9,10 @@ class CategoryController extends ChangeNotifier {
   CategoryController({CategoryRepository? repository})
     : _repository = repository ?? CategoryRepository();
 
-  // ── Estado público ─────────────────────────────────────────────────────────
-
   List<CategoryModel> items = [];
   bool isLoading = false;
   bool isSaving = false;
   String? error;
-
-  // ── Ações ──────────────────────────────────────────────────────────────────
 
   Future<void> load() async {
     isLoading = true;
@@ -75,6 +71,5 @@ class CategoryController extends ChangeNotifier {
     }
   }
 
-  // O Firestore substitui este valor pelo ID definitivo ao criar o documento.
   String generateId() => '';
 }
